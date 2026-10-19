@@ -1,0 +1,311 @@
+/* ============================================================================
+   Fifty Tracker — Login page
+   ============================================================================ */
+
+.login-shell {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Soft animated background — brand teal glow + grid pattern */
+.login-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+.login-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(240, 134, 0, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 134, 0, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at center, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 75%);
+}
+.login-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.45;
+  animation: orbFloat 18s ease-in-out infinite;
+}
+.login-orb-1 {
+  top: -120px;
+  left: -120px;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+}
+.login-orb-2 {
+  bottom: -150px;
+  right: -150px;
+  width: 560px;
+  height: 560px;
+  background: radial-gradient(circle, var(--light-cyan) 0%, transparent 70%);
+  animation-delay: -6s;
+}
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 30px) scale(0.95); }
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 36px 32px 28px;
+  box-shadow: var(--shadow-xl);
+}
+
+.login-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.login-product {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--light-cyan);
+  background: var(--primary-soft);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--primary-soft-2);
+}
+
+.login-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.login-subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0 0 24px;
+  line-height: 1.55;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-submit {
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px 18px;
+  font-size: 15px;
+}
+
+.login-error {
+  background: var(--danger-soft);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #fca5a5;
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.login-foot {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.login-foot p {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+.login-foot a {
+  color: var(--light-cyan);
+  font-weight: 600;
+}
+.login-reset {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  font-family: var(--font-sans);
+}
+.login-reset:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.login-reset:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Live debug panel — shows the ground truth of what's happening */
+.debug-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.debug-title {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 12px;
+  font-family: var(--font-sans);
+}
+.debug-subtitle {
+  color: var(--text-dim);
+  font-size: 10px;
+  font-family: var(--font-sans);
+}
+.debug-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.debug-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 8px;
+  align-items: start;
+}
+.debug-label {
+  color: var(--text-dim);
+  font-size: 11px;
+}
+.debug-val {
+  color: var(--text);
+  word-break: break-all;
+}
+.debug-val.ok { color: #6ee7b7; }
+.debug-val.warn { color: #fbbf24; }
+.debug-val.err { color: #fca5a5; }
+.debug-val.mono { font-family: var(--font-mono); font-size: 10.5px; }
+.debug-calls {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.debug-calls-header {
+  color: var(--text-dim);
+  font-size: 10px;
+  margin-bottom: 6px;
+  font-family: var(--font-sans);
+}
+.debug-call {
+  display: grid;
+  grid-template-columns: 50px 1fr 50px 50px;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 10.5px;
+}
+.debug-call-method { color: var(--text-muted); }
+.debug-call-url { color: var(--text); word-break: break-all; }
+.debug-call-status.ok { color: #6ee7b7; }
+.debug-call-status.fail { color: #fca5a5; }
+.debug-call-ms { color: var(--text-dim); text-align: right; }
+.debug-stale, .debug-fresh {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+}
+.debug-stale {
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+.debug-fresh {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+.debug-stale-header, .debug-fresh-header {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.debug-stale-header { color: #fbbf24; }
+.debug-fresh-header { color: #fca5a5; }
+.debug-stale-text, .debug-fresh-text {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Password input with show/hide toggle */
+.password-input {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+.password-input .input {
+  padding-right: 44px;
+}
+.password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+  padding: 0;
+}
+.password-toggle:hover {
+  color: var(--primary);
+  background: var(--bg-elev-2);
+}
+.password-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+.field-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.field-hint code {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+}

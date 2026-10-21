@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation, Navigate, Link, useSearchParams } from 'react-router-dom'
+import { useNavigate, useLocation, Navigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import Logo from '../components/Logo'
-import { IconShield, IconEye, IconEyeOff, IconRefresh } from '../components/Icons'
+import { IconShield, IconEye, IconEyeOff } from '../components/Icons'
 
 export default function LoginPage() {
   const { user, login } = useAuth()
@@ -37,22 +37,6 @@ export default function LoginPage() {
       window.location.replace('/login')
     }
   }, [searchParams, setSearchParams, toast])
-
-  function clearSession() {
-    const keys = []
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const k = localStorage.key(i)
-      if (k && k.startsWith('ft_')) {
-        localStorage.removeItem(k)
-        keys.push(k)
-      }
-    }
-    toast.success(`Cleared ${keys.length} stale session key(s). Reloading…`)
-    // Hard reload bypassing cache
-    setTimeout(() => {
-      window.location.replace('/login?_=' + Date.now())
-    }, 600)
-  }
 
   if (user) {
     return <Navigate to={location.state?.from?.pathname || '/dashboard'} replace />
@@ -141,7 +125,7 @@ export default function LoginPage() {
                 className="input"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="demo1234"
+                placeholder="Your password"
                 data-form-type="other"
                 data-lpignore="true"
                 data-1p-ignore="true"
@@ -157,10 +141,6 @@ export default function LoginPage() {
                 {showPw ? <IconEyeOff size={18} /> : <IconEye size={18} />}
               </button>
             </div>
-            <div className="field-hint">
-              Demo accounts: any email from the Users page · password{' '}
-              <code>demo1234</code>
-            </div>
           </div>
 
           {err && <div className="login-error">{err}</div>}
@@ -174,22 +154,6 @@ export default function LoginPage() {
             <span>{submitting ? 'Signing in…' : 'Sign in'}</span>
           </button>
         </form>
-
-        <div className="login-foot">
-          <p>
-            No public sign-up. Accounts are added by an Admin from{' '}
-            <Link to="/login">User Management</Link>.
-          </p>
-          <button
-            type="button"
-            className="login-reset"
-            onClick={clearSession}
-            title="Clear all Fifty Tracker session data and reload"
-          >
-            <IconRefresh size={14} />
-            <span>Stuck? Clear session &amp; retry</span>
-          </button>
-        </div>
       </div>
     </div>
   )

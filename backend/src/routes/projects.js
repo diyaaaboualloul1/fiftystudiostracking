@@ -19,7 +19,7 @@
 const express = require('express');
 const { query, withTx } = require('../config/db');
 const { authRequired, requireActiveUser } = require('../middleware/auth');
-const { requireRole, requireProjectAccess } = require('../middleware/permissions');
+const { requireRole, requireProjectAccess, requireProjectWriteAccess } = require('../middleware/permissions');
 const { logActivity } = require('../middleware/activityLog');
 const { deriveStatus } = require('../utils/status');
 const { computeProgress } = require('../utils/progress');
@@ -350,7 +350,7 @@ router.get('/:id(\\d+)', authRequired, requireActiveUser, requireProjectAccess('
 // ============================================================
 // PATCH project — admin
 // ============================================================
-router.patch('/:id(\\d+)', authRequired, requireActiveUser, requireRole('admin'), async (req, res, next) => {
+router.patch('/:id(\\d+)', authRequired, requireActiveUser, requireProjectWriteAccess(), async (req, res, next) => {
   try {
     const id = Number(req.params.id);
     const cur = await query('SELECT * FROM projects WHERE id = $1', [id]);

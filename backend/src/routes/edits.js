@@ -11,7 +11,7 @@
 const express = require('express');
 const { query, withTx } = require('../config/db');
 const { authRequired, requireActiveUser } = require('../middleware/auth');
-const { requireRole, requireProjectAccess } = require('../middleware/permissions');
+const { requireRole, requireProjectAccess, requireProjectWriteAccess } = require('../middleware/permissions');
 const { logActivity } = require('../middleware/activityLog');
 const { isEditOverdue, editExceedsPhase } = require('../utils/overdue');
 
@@ -75,7 +75,7 @@ router.get(
 // ============================================================
 router.post(
   '/phases/:id(\\d+)/edits',
-  authRequired, requireActiveUser, requireRole('admin'),
+  authRequired, requireActiveUser, requireProjectWriteAccess(),
   async (req, res, next) => {
     try {
       const phaseId = Number(req.params.id);

@@ -17,7 +17,7 @@
 const express = require('express');
 const { query, withTx } = require('../config/db');
 const { authRequired, requireActiveUser } = require('../middleware/auth');
-const { requireRole, requireProjectAccess, resolveProjectIdForRequest } = require('../middleware/permissions');
+const { requireRole, requireProjectAccess, requireProjectWriteAccess, resolveProjectIdForRequest } = require('../middleware/permissions');
 const { logActivity } = require('../middleware/activityLog');
 const { computeProgress } = require('../utils/progress');
 const { isPhaseOverdue, isEditOverdue } = require('../utils/overdue');
@@ -81,7 +81,7 @@ router.get(
 // ============================================================
 router.post(
   '/projects/:id(\\d+)/phases',
-  authRequired, requireActiveUser, requireRole('admin'),
+  authRequired, requireActiveUser, requireProjectWriteAccess(),
   async (req, res, next) => {
     try {
       const projectId = Number(req.params.id);
@@ -225,7 +225,7 @@ router.get(
 // ============================================================
 router.patch(
   '/phases/:id(\\d+)',
-  authRequired, requireActiveUser, requireRole('admin'),
+  authRequired, requireActiveUser, requireProjectWriteAccess(),
   async (req, res, next) => {
     try {
       const id = Number(req.params.id);
@@ -327,7 +327,7 @@ router.patch(
 // ============================================================
 router.post(
   '/phases/:id(\\d+)/activate',
-  authRequired, requireActiveUser, requireRole('admin'),
+  authRequired, requireActiveUser, requireProjectWriteAccess(),
   async (req, res, next) => {
     try {
       const id = Number(req.params.id);

@@ -66,6 +66,10 @@ export default function ProjectDetailPage() {
   const [users, setUsers] = useState([])
 
   const isAdmin = me?.role === 'admin'
+  // Member / owner can edit the project they belong to. Admin already covered by isAdmin.
+  const isProjectOwner = project?.owner_id === me?.id
+  const isProjectMember = Array.isArray(project?.members) && project.members.some((m) => m.id === me?.id)
+  const canManageProject = isAdmin || isProjectOwner || isProjectMember
 
   // Sync tab to URL
   useEffect(() => {
@@ -121,7 +125,7 @@ export default function ProjectDetailPage() {
 
   /* -------- inline name edit -------- */
   function startEditName() {
-    if (!isAdmin) return
+    if (!canManageProject) return
     setNameDraft(project.name)
     setEditingName(true)
   }
@@ -271,7 +275,7 @@ export default function ProjectDetailPage() {
   }
 
   const actionItems = []
-  if (isAdmin) {
+  if (canManageProject) {
     actionItems.push({
       label: 'Edit project',
       icon: <IconEdit size={14} />,
@@ -351,7 +355,7 @@ export default function ProjectDetailPage() {
               if (e.currentTarget) e.currentTarget.textContent = project.name
             }
           }}
-          title={isAdmin ? 'Double-click to rename' : undefined}
+          title={canManageProject ? 'Double-click to rename' : undefined}
         >
           {editingName ? nameDraft : project.name}
         </h1>

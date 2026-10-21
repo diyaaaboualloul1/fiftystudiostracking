@@ -136,8 +136,62 @@ function requireProjectAccess(_mode) {
   };
 }
 
+/**
+ * requireProjectWriteAccess()
+ *   - Admin bypasses (with existence check, gives 404 not 500 for missing projects).
+ *   - Otherwise: must be the project's owner OR a row in project_members.
+ *   - Replaces requireRole('admin') for in-project CRUD (project fields,
+ *     phases, edits). Destructive global operations (archive/restore/delete
+ *     a project, manage members, manage links) remain requireRole('admin').
+ */
+function requireProjectWriteAccess() {
+  return async function (req, res, next) {
+    try {
+      if (!req.user) return res.status(401).json({ error: 'Auth required' });
+      if (!req.user.active) return res.status(403).json({ error: 'User account is inactive' });
+
+      const projectId = await resolveProjectIdForRequest(req);
+      if (projectId === null) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
+      req.project_id = projectId;
+
+      // Admin bypass (with existence check)
+      if (req.user.role === 'admin') {
+        const exists = await query('SELECT id FROM projects WHERE id = $1', [projectId]);
+        if (exists.rowCount === 0) {
+          return res.status(404).json({ error: 'Project not found' });
+        }
+        return next();
+      }
+
+      // Non-admin: must be project owner or project member.
+      const access = await query(
+        `SELECT
+           (p.owner_id = $2) AS is_owner,
+           EXISTS (SELECT 1 FROM project_members pm WHERE pm.project_id = p.id AND pm.user_id = $2) AS is_member
+         FROM projects p WHERE p.id = $1`,
+        [projectId, req.user.id]
+      );
+      if (access.rowCount === 0) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
+      const r = access.rows[0];
+      if (!r.is_owner && !r.is_member) {
+        return res.status(403).json({
+          error: 'Write access requires project ownership, membership, or admin role',
+        });
+      }
+      next();
+    } catch (e) {
+      next(e);
+    }
+  };
+}
+
 module.exports = {
   requireRole,
   requireProjectAccess,
+  requireProjectWriteAccess,
   resolveProjectIdForRequest,
 };

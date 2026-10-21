@@ -70,6 +70,10 @@ export default function PhaseDetailPage() {
   const [statusHelpOpen, setStatusHelpOpen] = useState(false)
 
   const isAdmin = me?.role === 'admin'
+  // Member / owner can edit phases of the project they belong to.
+  const isProjectOwner = project?.owner_id === me?.id
+  const isProjectMember = Array.isArray(project?.members) && project.members.some((m) => m.id === me?.id)
+  const canManageProject = isAdmin || isProjectOwner || isProjectMember
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -198,13 +202,13 @@ export default function PhaseDetailPage() {
   const isArchived = Boolean(phase.archived_at)
 
   const actionItems = []
-  if (isAdmin && !isArchived && phase.status === 'planned') {
+  if (canManageProject && !isArchived && phase.status === 'planned') {
     actionItems.push({ label: 'Activate phase', icon: <IconPlay size={14} />, onClick: onActivate })
   }
-  if (isAdmin && !isArchived && ['active', 'waiting_for_client', 'on_hold'].includes(phase.status)) {
+  if (canManageProject && !isArchived && ['active', 'waiting_for_client', 'on_hold'].includes(phase.status)) {
     actionItems.push({ label: 'Complete phase', icon: <IconCheck size={14} />, onClick: onComplete })
   }
-  if (isAdmin) {
+  if (canManageProject) {
     actionItems.push({ label: 'Edit phase', icon: <IconEdit size={14} />, onClick: () => setEditPhase(true) })
   }
   if (isAdmin && !isArchived) {

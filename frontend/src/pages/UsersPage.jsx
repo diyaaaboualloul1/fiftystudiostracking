@@ -27,7 +27,11 @@ export default function UsersPage() {
   const [formErr, setFormErr] = useState({})
   const [submitting, setSubmitting] = useState(false)
 
-  const [confirm, setConfirm] = useState(null) // { user, action: 'deactivate' | 'reactivate' | 'delete' }
+  const [confirm, setConfirm] = useState(null) // { user, action: 'deactivate' | 'reactivate' }
+  const [deleteModal, setDeleteModal] = useState(null) // { user }
+  const [deleteEmail, setDeleteEmail] = useState('')
+  const [deleteErr, setDeleteErr] = useState('')
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -58,6 +62,63 @@ export default function UsersPage() {
   function closeModal() {
     if (submitting) return
     setModal({ open: false, mode: 'create', user: null })
+  }
+
+  function openDelete(u) {
+    setDeleteEmail('')
+    setDeleteErr('')
+    setDeleteModal({ user: u })
+  }
+
+  function closeDelete() {
+    if (deleteSubmitting) return
+    setDeleteModal(null)
+    setDeleteErr('')
+    setDeleteEmail('')
+  }
+
+  async function submitDelete() {
+    if (!deleteModal?.user) return
+    const u = deleteModal.user
+    if (
+      deleteEmail.toLowerCase().trim() !==
+      (u.email || '').toLowerCase().trim()
+    ) {
+      setDeleteErr('Email does not match.')
+      return
+    }
+    setDeleteSubmitting(true)
+    setDeleteErr('')
+    try {
+      const result = await apiDelete(`/users/${u.id}?hard=true`)
+      const notesDeleted = result?.notes_deleted ?? 0
+      const extra =
+        notesDeleted > 0
+          ? ` (${notesDeleted} note${notesDeleted === 1 ? '' : 's'} also removed)`
+          : ''
+      toast.success(`${u.name} permanently deleted${extra}.`)
+      setDeleteModal(null)
+      setDeleteEmail('')
+      load()
+    } catch (e) {
+      const ed = e?.response?.data
+      const reason = ed?.reason
+      let msg = ed?.error || 'Delete failed'
+      if (
+        reason === 'owns_projects' &&
+        Array.isArray(ed?.owned_projects) &&
+        ed.owned_projects.length > 0
+      ) {
+        const names = ed.owned_projects
+          .map((p) => p.name)
+          .slice(0, 3)
+          .join(', ')
+        msg += ` (${names}${ed.owned_projects.length > 3 ? '…' : ''})`
+      }
+      setDeleteErr(msg)
+    } finally {
+      setDeleteSubmitting(false)
+    }
   }
 
   async function submitForm(e) {
@@ -96,10 +157,6 @@ export default function UsersPage() {
       } else if (action === 'reactivate') {
         await apiPost(`/users/${user.id}/reactivate`, {})
         toast.success(`${user.name} reactivated.`)
-      } else if (action === 'delete') {
-        // Not currently supported by the API (soft-only) — but keep UI parity.
-        await apiDelete(`/users/${user.id}?hard=1`).catch(() => {})
-        toast.success(`${user.name} removed.`)
       }
       setConfirm(null)
       load()
@@ -251,17 +308,28 @@ export default function UsersPage() {
                         <IconTrash size={16} />
                       </button>
                     ) : (
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-icon"
-                        onClick={() =>
-                          setConfirm({ user: u, action: 'reactivate' })
-                        }
-                        title="Reactivate"
-                        aria-label={`Reactivate ${u.name}`}
-                      >
-                        <IconCheck size={16} />
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-icon"
+                          onClick={() =>
+                            setConfirm({ user: u, action: 'reactivate' })
+                          }
+                          title="Reactivate"
+                          aria-label={`Reactivate ${u.name}`}
+                        >
+                          <IconCheck size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-icon btn-icon-danger"
+                          onClick={() => openDelete(u)}
+                          title="Delete permanently"
+                          aria-label={`Delete ${u.name} permanently`}
+                        >
+                          <IconAlertTriangle size={16} />
+                        </button>
+                      </>
                     )}
                   </td>
                 </tr>
@@ -418,6 +486,75 @@ export default function UsersPage() {
               ? `${confirm?.user?.name || 'This user'} will be able to sign in and access the tracker again.`
               : `${confirm?.user?.name || 'This user'} will no longer be able to sign in. Their data stays intact and you can reactivate any time.`}
           </p>
+        </div>
+      </Modal>
+
+      {/* Hard-delete (permanent) modal */}
+      <Modal
+        open={Boolean(deleteModal)}
+        onClose={closeDelete}
+        title={`Permanently delete ${deleteModal?.user?.name || 'this user'}?`}
+        footer={
+          <>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={closeDelete}
+              disabled={deleteSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={submitDelete}
+              disabled={
+                deleteSubmitting ||
+                deleteEmail.toLowerCase().trim() !==
+                  (deleteModal?.user?.email || '').toLowerCase().trim()
+              }
+            >
+              {deleteSubmitting && <span className="spinner" />}
+              <span>
+                {deleteSubmitting ? 'Deleting…' : 'Delete permanently'}
+              </span>
+            </button>
+          </>
+        }
+      >
+        <div className="confirm-body">
+          <div className="confirm-icon confirm-icon-danger">
+            <IconAlertTriangle size={28} />
+          </div>
+          <p>
+            This will <strong>permanently remove</strong>{' '}
+            <strong>{deleteModal?.user?.name}</strong> from the system. This
+            action <strong>cannot be undone</strong>. Notes authored by this
+            user will also be removed.
+          </p>
+          <div className="field" style={{ marginTop: 18 }}>
+            <label className="field-label" htmlFor="confirm-delete-email">
+              Type the user's email to confirm:
+            </label>
+            <code className="cell-mono confirm-target-email">
+              {deleteModal?.user?.email}
+            </code>
+            <input
+              id="confirm-delete-email"
+              type="email"
+              className="input"
+              value={deleteEmail}
+              onChange={(e) => {
+                setDeleteEmail(e.target.value)
+                if (deleteErr) setDeleteErr('')
+              }}
+              placeholder="paste or type the email above"
+              autoComplete="off"
+              autoFocus
+              disabled={deleteSubmitting}
+            />
+            {deleteErr && <div className="field-error">{deleteErr}</div>}
+          </div>
         </div>
       </Modal>
     </AppShell>

@@ -117,6 +117,22 @@ export default function ProjectsPage() {
     return [...overdue, ...rest]
   }, [projects])
 
+  // Today's date in the company timezone (Asia/Kuwait) — used for the
+  // "Today · …" badge above the table so users can compare deadlines against
+  // today without having to check their OS clock. Computed once per mount.
+  const todayLabel = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'Asia/Kuwait',
+      }).format(new Date())
+    } catch {
+      return new Date().toLocaleDateString()
+    }
+  }, [])
+
   const onSort = (key) => {
     if (sort === key) {
       setOrder(order === 'asc' ? 'desc' : 'asc')
@@ -151,6 +167,12 @@ export default function ProjectsPage() {
         </RoleGuard>
       }
     >
+      <div className="projects-today-badge" aria-label={`Today is ${todayLabel}`}>
+        <IconCalendar size={14} />
+        <span>
+          Today · <strong>{todayLabel}</strong>
+        </span>
+      </div>
       <div className="filter-bar">
         <div className="search-input">
           <IconSearch size={16} className="search-icon" />

@@ -127,7 +127,7 @@ export default function EditProjectModal({ open, onClose, project, onSaved }) {
         </div>
 
         <div className="field">
-          <label className="field-label" htmlFor="ep-pd">Project deadline</label>
+          <label className="field-label" htmlFor="ep-pd">Project deadline <span style={{ color: 'var(--text-dim)', fontWeight: 400 }}>(optional)</span></label>
           <input
             id="ep-pd"
             type="date"

@@ -18,11 +18,6 @@ export default function CreateProjectModal({ open, onClose, onCreated, users = [
   const [projectState, setProjectState] = useState('new_build')
   const [projectDeadline, setProjectDeadline] = useState('')
 
-  // Optional first phase
-  const [includePhase, setIncludePhase] = useState(false)
-  const [phaseTitle, setPhaseTitle] = useState('')
-  const [phaseDeadline, setPhaseDeadline] = useState('')
-
   const [errs, setErrs] = useState({})
   const [submitting, setSubmitting] = useState(false)
 
@@ -34,9 +29,6 @@ export default function CreateProjectModal({ open, onClose, onCreated, users = [
       setOwnerId(me?.id || '')
       setProjectState('new_build')
       setProjectDeadline('')
-      setIncludePhase(false)
-      setPhaseTitle('')
-      setPhaseDeadline('')
       setErrs({})
     }
   }, [open, me])
@@ -46,7 +38,6 @@ export default function CreateProjectModal({ open, onClose, onCreated, users = [
     const err = {}
     if (!name || name.trim().length < 2) err.name = 'Name must be at least 2 characters.'
     if (!ownerId) err.owner_id = 'Pick an owner.'
-    if (!projectDeadline) err.project_deadline = 'Project deadline is required.'
     setErrs(err)
     if (Object.keys(err).length) return
 
@@ -56,15 +47,9 @@ export default function CreateProjectModal({ open, onClose, onCreated, users = [
         name: name.trim(),
         owner_id: Number(ownerId),
         project_state: projectState,
-        project_deadline: projectDeadline,
+        project_deadline: projectDeadline || null,
         client: client.trim() || undefined,
         description: description.trim() || undefined,
-      }
-      if (includePhase && phaseTitle.trim()) {
-        body.first_phase = {
-          title: phaseTitle.trim(),
-          deadline: phaseDeadline || undefined,
-        }
       }
       const { project } = await apiPost('/projects', body)
       toast.success(`Project "${project.name}" created.`)
@@ -166,7 +151,7 @@ export default function CreateProjectModal({ open, onClose, onCreated, users = [
 
         <div className="field">
           <label className="field-label" htmlFor="cp-deadline">
-            Project deadline <span style={{ color: 'var(--danger)', fontWeight: 600 }}>*</span>
+            Project deadline <span style={{ color: 'var(--text-dim)', fontWeight: 400 }}>(optional)</span>
           </label>
           <input
             id="cp-deadline"
@@ -174,7 +159,6 @@ export default function CreateProjectModal({ open, onClose, onCreated, users = [
             className="input"
             value={projectDeadline}
             onChange={(e) => setProjectDeadline(e.target.value)}
-            required
           />
           {errs.project_deadline && <div className="field-error">{errs.project_deadline}</div>}
         </div>
@@ -209,41 +193,6 @@ export default function CreateProjectModal({ open, onClose, onCreated, users = [
             ))}
           </div>
         </div>
-
-        <div className="field">
-          <label className="toggle" style={{ paddingLeft: 0 }}>
-            <input
-              type="checkbox"
-              checked={includePhase}
-              onChange={(e) => setIncludePhase(e.target.checked)}
-            />
-            <span>Add a first phase now</span>
-          </label>
-        </div>
-
-        {includePhase && (
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10, marginBottom: 16 }}>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label className="field-label">Phase 1 title</label>
-              <input
-                className="input"
-                value={phaseTitle}
-                onChange={(e) => setPhaseTitle(e.target.value)}
-                placeholder="Initial build"
-                maxLength={200}
-              />
-            </div>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label className="field-label">Deadline</label>
-              <input
-                type="date"
-                className="input"
-                value={phaseDeadline}
-                onChange={(e) => setPhaseDeadline(e.target.value)}
-              />
-            </div>
-          </div>
-        )}
       </form>
     </Modal>
   )

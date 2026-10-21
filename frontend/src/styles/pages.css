@@ -2754,3 +2754,28 @@
   line-height: 1.4;
   margin-top: 2px;
 }
+
+/* ---------- Today's date badge (projects page) ---------- */
+.projects-today-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  margin: 0 0 18px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+  width: fit-content;
+}
+.projects-today-badge svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.projects-today-badge strong {
+  color: var(--text);
+  font-weight: 700;
+}
